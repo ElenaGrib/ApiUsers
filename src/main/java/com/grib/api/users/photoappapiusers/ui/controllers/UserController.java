@@ -3,6 +3,7 @@ package com.grib.api.users.photoappapiusers.ui.controllers;
 import com.grib.api.users.photoappapiusers.dto.UserDto;
 import com.grib.api.users.photoappapiusers.service.UserService;
 import com.grib.api.users.photoappapiusers.ui.model.CreateUserRequestModel;
+import com.grib.api.users.photoappapiusers.ui.model.CreateUserResponseModel;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,15 +32,17 @@ public class UserController {
 
     @PostMapping(consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE},
             produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-    public ResponseEntity createUser(@Valid @RequestBody CreateUserRequestModel userDetails) {
+    public ResponseEntity<CreateUserResponseModel> createUser(@Valid @RequestBody CreateUserRequestModel userDetails) {
 
         ModelMapper modelMapper = new ModelMapper();
         modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
 
         UserDto userDto = modelMapper.map(userDetails, UserDto.class);
 
-        userService.createUser(userDto);
+        UserDto createdUser = userService.createUser(userDto);
 
-        return new ResponseEntity(userDto, HttpStatus.CREATED);
+        CreateUserResponseModel returnedValue = modelMapper.map(createdUser, CreateUserResponseModel.class);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(returnedValue);
     }
 }
