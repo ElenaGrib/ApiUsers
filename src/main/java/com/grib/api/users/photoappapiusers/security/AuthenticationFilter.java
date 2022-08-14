@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.grib.api.users.photoappapiusers.dto.UserDto;
 import com.grib.api.users.photoappapiusers.service.UserService;
 import com.grib.api.users.photoappapiusers.ui.model.LoginRequestModel;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -19,6 +21,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 
 public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
@@ -58,6 +61,13 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
         String userName = ((User) authentication.getPrincipal()).getUsername();
         UserDto userDto = userService.getUserDetailsByEmail(userName);
 
+        String token = Jwts.builder()
+                .setSubject(userDto.getUserId())
+                .setExpiration(new Date(System.currentTimeMillis() + Long.parseLong(environment.getProperty("token.expiration_time"))))
+                .signWith(SignatureAlgorithm.HS256, environment.getProperty("token.secret"))
+                .compact();
 
+        response.addHeader("token", token);
+        response.addHeader("userId", userDto.getUserId());
     }
 }
