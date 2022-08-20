@@ -1,5 +1,6 @@
 package com.grib.api.users.photoappapiusers.service.impl;
 
+import com.grib.api.users.photoappapiusers.data.AlbumsServiceClient;
 import com.grib.api.users.photoappapiusers.data.UserEntity;
 import com.grib.api.users.photoappapiusers.dto.UserDto;
 import com.grib.api.users.photoappapiusers.repository.UserRepository;
@@ -8,10 +9,7 @@ import com.grib.api.users.photoappapiusers.ui.model.AlbumResponseModel;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.env.Environment;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -29,13 +27,18 @@ public class UserServiceImpl implements UserService {
     RestTemplate restTemplate;
     UserRepository userRepository;
     BCryptPasswordEncoder passwordEncoder;
+    AlbumsServiceClient albumsServiceClient;
 
     @Autowired
     Environment environment;
 
     @Autowired
-    public UserServiceImpl(RestTemplate restTemplate, UserRepository userRepository, BCryptPasswordEncoder passwordEncoder) {
-        this.restTemplate = restTemplate;
+    public UserServiceImpl(
+            //RestTemplate restTemplate,
+            AlbumsServiceClient albumsServiceClient,
+            UserRepository userRepository, BCryptPasswordEncoder passwordEncoder) {
+        //this.restTemplate = restTemplate;
+        this.albumsServiceClient = albumsServiceClient;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
     }
@@ -86,10 +89,12 @@ public class UserServiceImpl implements UserService {
 
         UserDto userDto = new ModelMapper().map(userEntity, UserDto.class);
 
-        ResponseEntity<List<AlbumResponseModel>> albumsListResponse = restTemplate.exchange(albumsUrl, HttpMethod.GET, null,
-                new ParameterizedTypeReference<List<AlbumResponseModel>>() {
-                });
-        List<AlbumResponseModel> albumsList = albumsListResponse.getBody();
+//        ResponseEntity<List<AlbumResponseModel>> albumsListResponse = restTemplate.exchange(albumsUrl, HttpMethod.GET, null,
+//                new ParameterizedTypeReference<List<AlbumResponseModel>>() {
+//                });
+//        List<AlbumResponseModel> albumsList = albumsListResponse.getBody();
+
+        List<AlbumResponseModel> albumsList = albumsServiceClient.getAlbums(userId);
 
         userDto.setAlbums(albumsList);
 
