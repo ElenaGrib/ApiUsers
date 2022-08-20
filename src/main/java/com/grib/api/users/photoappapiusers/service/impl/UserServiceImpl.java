@@ -6,6 +6,8 @@ import com.grib.api.users.photoappapiusers.dto.UserDto;
 import com.grib.api.users.photoappapiusers.repository.UserRepository;
 import com.grib.api.users.photoappapiusers.service.UserService;
 import com.grib.api.users.photoappapiusers.ui.model.AlbumResponseModel;
+import feign.FeignException;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,8 +23,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Service
 public class UserServiceImpl implements UserService {
+
 
     RestTemplate restTemplate;
     UserRepository userRepository;
@@ -94,7 +98,13 @@ public class UserServiceImpl implements UserService {
 //                });
 //        List<AlbumResponseModel> albumsList = albumsListResponse.getBody();
 
-        List<AlbumResponseModel> albumsList = albumsServiceClient.getAlbums(userId);
+        List<AlbumResponseModel> albumsList = null;
+
+        try {
+            albumsServiceClient.getAlbums(userId);
+        } catch (FeignException exception) {
+            log.error(exception.getMessage(), exception);
+        }
 
         userDto.setAlbums(albumsList);
 
